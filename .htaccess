@@ -1,0 +1,9 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php/$1 [L]
+
+<FilesMatch ".*\.(jpe?g|JPE?G|gif|GIF|png|PNG|swf|SWF|pdf|PDF)$" >
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
