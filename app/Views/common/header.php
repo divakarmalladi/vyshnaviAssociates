@@ -48,7 +48,7 @@
         <nav id="navbar" class="navbar">
           <ul>
             <?php if ($session->loginId) {?>
-              <li><a href="<?php echo base_url();?>/dashboard" class="nav-link scrollto" style="color: #10c796;font-size:18px;"><?php echo USER_TYPE_LIST[$session->userData['user_type']];?> Portal (<?php echo $session->userData['user_name'];?>)</a></li>
+              <li><a href="<?php echo base_url();?>/user-dashboard" class="nav-link scrollto" style="color: #10c796;font-size:18px;"><?php echo USER_TYPE_LIST[$session->userData['user_type']];?> Portal (<?php echo $session->userData['user_name'];?>)</a></li>
               
               <li><a class="nav-link scrollto" href="<?php echo base_url();?>/logout">Logout</a></li>
             <?php } else { ?>

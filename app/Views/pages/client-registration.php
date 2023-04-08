@@ -1,4 +1,4 @@
-
+<?php $sessClient = session();?>
 <main id="main">
     <!-- ======= Breadcrumbs ======= -->
     <section class="breadcrumbs">
@@ -57,44 +57,52 @@
                 <div class="col-12">
                     <div class="switchLayout form-check">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" name="<?php echo $key?>" type="checkbox" id="<?php echo $key?>" onChange="return showSublist('<?php echo $key;?>');">
+                            <input class="form-check-input" name="<?php echo $key?>" type="checkbox" id="<?php echo $key?>" onChange="return showSublist('<?php echo $key;?>');" <?php echo isset($docData) && isset($docData[$key]) ? 'checked':'';?>>
                             <label class="form-check-label" for="<?php echo $key?>"><?php echo $value;?></label>
                         </div>
                     </div>
 
-                    <div class="sublist" style="display:none" id="<?php echo $key?>">
+                    <div class="sublist" style="<?php echo isset($docData) && isset($docData[$key]) ? 'display:block':'display:none';?>" id="<?php echo $key?>">
                         <?php if (isset(CHECK_LIST_SUB_ITEMS[$key])) { foreach(CHECK_LIST_SUB_ITEMS[$key] as $subkey => $subvalue) { 
                           $checkedStatus = false;
                           $docInfo = [];
                           if (isset($docData[$key][$subkey])) {
                             $checkedStatus = true;
-                            if($subvalue == 'Others') {
-                              $docInfo = $docData[$key][$subkey];
-                            }else {
-                              $docInfo = $docData[$key][$subkey][0];
-                            }
+                            // if($subvalue == 'Others') {
+                            //   $docInfo = $docData[$key][$subkey];
+                            // }else {
+                            //   $docInfo = $docData[$key][$subkey][0];
+                            // }
+                            $docInfo = $docData[$key][$subkey];
                             //echo '<pre>';print_r($docInfo);echo '</pre>';
                           }
                         ?>
                             <div class="form-check">
                                 <div class="form-check">
+                                                                
                                     <input class="form-check-input" name="<?php echo $subkey?>" type="checkbox" id="<?php echo $subkey?>" onChange="return showButtons('<?php echo $key.$subkey;?>');" <?php echo $checkedStatus ? 'checked': '';?>>
                                     <label class="form-check-label btnSection" for="<?php echo $subkey;?>">
                                     <?php echo $subvalue;?>  <span style="display:none;" title="<?php echo isset($docInfo['actual_file_name']) ? $docInfo['actual_file_name'] : '';?>"><?php echo isset($docInfo['actual_file_name']) ? substr($docInfo['actual_file_name'], 0, 20) : '';?></span>
                                     <div class="btnSection" id="<?php echo $key.$subkey;?>" style="<?php echo $checkedStatus ? '': 'display:none;';?>">
                                         <div class="formInput">
-                                        <?php if($subvalue == 'Others') { ?>
-                                          <input class="form-control form-control-sm verifyDocsUpload" id="formFileSm<?php echo $key.$subkey;?>" type="file" value="" name="verifyDocs[<?php echo $key ?>][<?php echo $subkey?>][]" multiple>
-                                          <?php } else { ?>
+                                        
+                                        <?php /*if($subvalue == 'Others') {*/ ?>
+                                          <?php if($sessClient->userData && $sessClient->userData['user_type'] != 3 || $subvalue == 'Autocad Attachment') {?>
+                                          <input class="form-control form-control-sm verifyDocsUpload" id="formFileSm<?php echo $key.$subkey;?>" data-doc="" type="file" value="" name="verifyDocs[<?php echo $key ?>][<?php echo $subkey?>][]" multiple>
+                                          <?php } ?>
+                                          <?php /*} else { ?>
+                                            <?php if($sessClient->userData && $sessClient->userData['user_type'] != 3 || $subvalue == 'Autocad Attachment') { ?>
                                             <input class="form-control form-control-sm verifyDocsUpload" id="formFileSm<?php echo $key.$subkey;?>" type="file" value="" name="verifyDocs[<?php echo $key ?>][<?php echo $subkey?>]">
-                                          <?php }?>
+                                            <?php } ?>
+                                          <?php }*/?>
+                                          
                                         </div>
                                         <!-- <button type="button" class="btn btn-primary">Save</button> -->
-                                        <?php if($subvalue != 'Others') { ?> 
+                                        <?php /*if($subvalue != 'Others') { ?> 
                                         <div class="buttonsa" id="buttonsa<?php echo $key.$subkey;?>" style="<?php echo isset($docInfo['checklist']) ? '': 'display:none;'; ?>">
                                           
                                           <a href="javascript:;" title="<?php echo isset($docInfo['actual_file_name']) ? $docInfo['actual_file_name'] : '';?>" onClick="return viewFile(this)" data-doc="<?php echo isset($docInfo['doc_id']) ? $docInfo['doc_id']: '';?>" data-id="<?php echo 'documents/'.(isset($docInfo['customer_id'])?$docInfo['customer_id']:'').'/'.$key.'/'.(isset($docInfo['file_name'])?$docInfo['file_name']:'');?>" onClick="return downloadFile(this)"  id="download<?php echo $key.$subkey;?>" type="button" class="btn btn-success">View</a>
-
+                                          <?php if($sessClient->userData && $sessClient->userData['user_type'] != 3) { ?> 
                                           <a href="javascript:;" 
                                           title="<?php echo isset($docInfo['actual_file_name']) ? $docInfo['actual_file_name'] : '';?>" 
                                           id="delete<?php echo $key.$subkey;?>" 
@@ -105,23 +113,28 @@
                                           data-bs-toggle="modal" 
                                           data-bs-target="#exampleModalFileDelete" 
                                           onClick="return setCustomerId(this);">Delete</a>
-
+                                          <?php } ?>
                                         </div>
-                                        <?php }?>
+                                        <?php }*/?>
                                     </div>
                                     </label>
                                 </div>
                             </div>
-                            <?php if($subvalue == 'Others') {  
+                            <?php /*if($subvalue == 'Others') {  */
                                           foreach ($docInfo as $docKey => $docVal) {
                                         ?>
                                         <div class="row" style="margin-left: 30px; margin-bottom:5px;">
-                                        <div class="col-md-12">
-                                        <div class="buttonsa" id="buttonsa<?php echo $key.$subkey.(isset($docVal['doc_id']) ? $docVal['doc_id']: '');?>" style="<?php echo isset($docVal['checklist']) ? '': 'display:none;'; ?>">
-                                          <a href="javascript:;" class="col-md-6" style="display:inline-block;" title="<?php echo isset($docVal['actual_file_name']) ? $docVal['actual_file_name'] : '';?>"><?php echo substr($docVal['actual_file_name'], 0, 30)?></a>
-
+                                        
+                                        <a href="javascript:;" class="col-md-4" style="display:inline-block;" title="<?php echo isset($docVal['actual_file_name']) ? $docVal['actual_file_name'] : '';?>"><?php echo substr($docVal['actual_file_name'], 0, 30)?></a>
+                                        <?php if($sessClient->userData && $sessClient->userData['user_type'] != 3 || $subvalue == 'Autocad Attachment') { ?>
+                                          <div class="col-md-4">
+                                          <input style="width:auto;height:auto;" class="form-control form-control-sm verifyDocsUpload" id="formFileSm<?php echo $key.$subkey.'-'.$docKey;?>" data-doc="<?php echo isset($docVal['doc_id']) ? $docVal['doc_id']: '';?>" type="file" value="" name="verifyDoc[<?php echo $key ?>][<?php echo $subkey?>][]">
+                                          </div>
+                                          <?php } ?>
+                                        <div class="buttonsa col-md-4" id="buttonsa<?php echo $key.$subkey.(isset($docVal['doc_id']) ? $docVal['doc_id']: '');?>" style="<?php echo isset($docVal['checklist']) ? '': 'display:none;'; ?>">
+                                          
                                           <a href="javascript:;" title="<?php echo isset($docVal['actual_file_name']) ? $docVal['actual_file_name'] : '';?>" onClick="return viewFile(this)" data-doc="<?php echo isset($docVal['doc_id']) ? $docVal['doc_id']: '';?>" data-id="<?php echo 'documents/'.(isset($docVal['customer_id'])?$docVal['customer_id']:'').'/'.$key.'/'.(isset($docVal['file_name'])?$docVal['file_name']:'');?>" onClick="return downloadFile(this)"  id="download<?php echo $key.$subkey.(isset($docVal['doc_id']) ? $docVal['doc_id']: '');?>" type="button" class="btn btn-success">View</a>
-
+                                          <?php if($sessClient->userData && $sessClient->userData['user_type'] != 3) { ?>
                                           <a href="javascript:;" 
                                           title="<?php echo isset($docVal['actual_file_name']) ? $docVal['actual_file_name'] : '';?>" 
                                           id="delete<?php echo $key.$subkey.(isset($docVal['doc_id']) ? $docVal['doc_id']: '');?>" 
@@ -132,11 +145,10 @@
                                           data-bs-toggle="modal" 
                                           data-bs-target="#exampleModalFileDelete" 
                                           onClick="return setCustomerId(this);">Delete</a>
-
+                                          <?php } ?>
                                         </div>
                                         </div>
-                                        </div>
-                                        <?php } } ?> 
+                                        <?php } /*}*/ ?> 
                         <?php  } } ?>
                         <div class="col-12 mt-3" style="display:none;">
                           <fieldset class="statusFieldset">
@@ -190,6 +202,7 @@
                 <div class="my-2">
                     <input type="hidden" id="customer_id" name="customer_id" value="<?php echo isset($clientData) ? $clientData->customer_id:'';?>">
                     <input type="hidden" id="file_name" name="file_name" value="">
+                    <input type="hidden" id="doc_id_update" name="doc_id_update" value="">
                     <input type="hidden" id="file_sub_name" name="file_sub_name" value="">
                     <div class="loading" id="loading">Loading</div>
                     <div class="error-message" id="error-message"></div>
@@ -342,7 +355,7 @@
             $('#del_customer_id').val('');
             $('#del_doc_id').val('');
             
-            $('#buttonsa'+$('#delete_id').val()).css('display','none')
+            $('#buttonsa'+$('#delete_id').val()).parent().remove().css('display','none')
             $('#delete_id').val('');
             $('#exampleModalFileDelete').modal('hide');
           } 
@@ -485,8 +498,9 @@
       }
     });
     $('.verifyDocsUpload').on('change', (e) => {
-        console.log(e.target.id, $(this), $(this)[0]);
+        console.log($('#'+e.target.id).attr('data-doc'), $(this), $(this)[0]);
         $('#file_name').val(e.target.id);
+        $('#doc_id_update').val($('#'+e.target.id).attr('data-doc'));
         const formData = new FormData($('#clientRegistration')[0]);
         $.ajax({
           url:"<?php echo base_url();?>/client-registration/fileUpload",
@@ -507,6 +521,7 @@
             $('#delete'+response.checklist+response.subchecklist).attr('data-customer', response.customerId).attr('data-doc', response.doc_id).attr('data-id', response.checklist+response.subchecklist);
 
             $('#buttonsa'+response.checklist+response.subchecklist).show();
+            location.reload();
           } else if (response.status == 201) {
             let msg = '';
             for (const error in response.errors) {

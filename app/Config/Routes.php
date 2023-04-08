@@ -38,12 +38,16 @@ $routes->get('/employee-login', 'Home::userLogin');
 $routes->post('/user-login', 'Home::userLogin');
 $routes->get('/logout', 'Home::userLogout');
 $routes->get('/user-dashboard', 'Dashboard::home');
+$routes->get('/dashboard', 'Dashboard::home');
 $routes->get('/add-user', 'Dashboard::createUser');
 $routes->post('/add-user', 'Dashboard::createUser');
 $routes->get('/edit-user/(:any)', 'Dashboard::createUser');
 $routes->get('/edit-profile/(:any)', 'Dashboard::createUser');
 $routes->get('/delete-user/(:any)', 'Dashboard::deleteUser');
 $routes->get('/users', 'Dashboard::userList');
+$routes->get('/sms-details', 'Dashboard::smsList');
+$routes->post('/send-sms', 'Dashboard::sendSms');
+$routes->get('/send-sms', 'Dashboard::sendSms');
 
 $routes->get('/clients', 'Dashboard::clientList');
 // $routes->get('/client-registration', 'Dashboard::clientRegistration');

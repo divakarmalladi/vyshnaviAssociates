@@ -33,7 +33,10 @@
                                 <th scope="col">Project</th>
                                 <?php if ($sess->userData['user_type'] != 3) { ?>
                                 <th scope="col">Alloted To</th>
+                                <th scope="col">Registered By</th>
                                 <?php } ?>
+                                
+                                <th scope="col">Registered Date</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                                 
@@ -51,8 +54,11 @@
                                 <td><?php echo $value['contact_number'];?></td>
                                 <td><?php echo $value['type_of_project'];?></td>
                                 <?php if ($sess->userData['user_type'] != 3) { ?>
-                                <td><?php echo $value['alloted_id'];?></td>
+                                <td><?php echo $value['user_name'];?></td>
+                                <td><?php echo $value['luser_name'];?></td>
                                 <?php } ?>
+                                
+                                <td><?php echo date('d-m-y h:ia', strtotime($value['created_date']));?></td>
                                 <td><a href="javascript:;" data-bs-toggle="modal" data-bs-target="#exampleModalstatus" onClick="return setFileId('<?php echo $value['customer_id']?>', '<?php echo !empty($value['file_status_code']) ? $value['file_status_code']:'';?>');"><?php echo !empty($value['file_status_code']) ? $value['file_status_code']:'Update';?></a>
                                 <p id="file_text_<?php echo $value['customer_id']; ?>_para" style="display:none;"><?php echo !empty($value['file_text']) ? $value['file_text']:'';?></p>
                                 </td>
@@ -95,10 +101,11 @@
               <label for="file_status" class="form-label">File Status</label>
               <select id="file_status" name="file_status" class="form-select" onChange="return showComments(this.value)">
                   <option value="">Choose...</option>
-                  <option value="Approved">Approved</option>
+                  <option value="Finished">Finished</option>
                   <option value="Pending">Pending</option>
                   <option value="Shortfall">Shortfall</option>
               </select>
+              <ul id="file_status_text_notes" style="list-style-type: disclosure-closed;"></ul>
               <div id="file_status_text" style="display:none;">
                 <textarea class="form-control" id="file_status_notes"  name="file_status_notes" aria-label="With textarea"></textarea>
                 <span id="file_status_error"></span>
@@ -173,20 +180,35 @@
 <script>
 const setFileId = (customer_id, fileStatus) => {
     document.getElementById('filecustomerId').value = customer_id;
-    $('#file_status_notes').val($('#file_text_'+customer_id+'_para').text());
+    const paraText = $('#file_text_'+customer_id+'_para').text();
+    const frameText = paraText ? paraText.split('###'):[];
+    console.log(frameText);
+    let textPara = '';
+    if (frameText.length > 0) {
+      for (var i = 0; i < frameText.length ; i++) {
+        if (frameText[i] != '') {
+          textPara = textPara + '<li>'+frameText[i]+'</li>';
+        }
+      }
+    }
+    $('#file_status_text_notes').html(textPara);
     $('#file_status').val(fileStatus);
-    if (fileStatus!='' && fileStatus !='Approved') {
+    if (fileStatus!='' && fileStatus !='Finished') {
       $('#file_status_text').show();
+      $('#file_status_text_notes').show();
     } else {
       $('#file_status_text').hide();
+      $('#file_status_text_notes').hide();
     }
 }
 function showComments(val){
   console.log(val);
-  if (val !='Approved') {
+  if (val !='Finished') {
     $('#file_status_text').show();
+    $('#file_status_text_notes').show();
   } else {
     $('#file_status_text').hide();
+    $('#file_status_text_notes').hide();
   }
 }
 const saveFileStatus = () => {
@@ -195,9 +217,10 @@ const saveFileStatus = () => {
   const customerId = $('#filecustomerId').val();
   const notesText = $('#file_status_notes').val();
   const fileStatus = $('#file_status').val();
+  const paraText = $('#file_text_'+customerId+'_para').text();
   $('#file-loading').show();
   if (customerId != '') {
-    const formData = {'customerId': customerId, 'notesText': notesText, 'fileStatus': fileStatus}
+    const formData = {'customerId': customerId, 'notesText': notesText, 'fileStatus': fileStatus, 'paraText':paraText}
     $.ajax({
       url:"<?php echo base_url();?>/update-file-status",
       method:"POST",

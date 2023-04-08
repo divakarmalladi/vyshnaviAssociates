@@ -26,11 +26,11 @@
             <form class="row g-3 php-email-form" method="post" id="createUser">
                 <div class="col-md-6">
                     <label for="user_name" class="form-label">User Name</label>
-                    <input type="text" name="user_name" class="form-control" id="user_name" value="<?php echo isset($userData) ? $userData->user_name:'';?>">
+                    <input type="text" name="user_name" class="form-control" id="user_name" value="<?php echo isset($userData) ? $userData->user_name:'';?>" <?php echo $sess->userData && $sess->userData['user_type'] != 1? 'disabled':'';?>>
                 </div>
                 <div class="col-md-6">
                     <label for="user_email" class="form-label">Email</label>
-                    <input type="text" name="user_email" class="form-control" id="user_email" value="<?php echo isset($userData) ? $userData->user_email:'';?>">
+                    <input type="text" name="user_email" class="form-control" id="user_email" value="<?php echo isset($userData) ? $userData->user_email:'';?>" <?php echo $sess->userData && $sess->userData['user_type'] != 1? 'disabled':'';?>>
                 </div>
                 <div class="col-md-6">
                     <label for="user_password" class="form-label">Password</label>
@@ -42,7 +42,7 @@
                 </div>
                 <div class="col-6">
                     <label for="phone_number" class="form-label">Phone Number</label>
-                    <input type="text" name="phone_number" class="form-control" id="phone_number" placeholder="" value="<?php echo isset($userData) ? $userData->phone_number:'';?>">
+                    <input type="text" name="phone_number" class="form-control" id="phone_number" placeholder="" value="<?php echo isset($userData) ? $userData->phone_number:'';?>" <?php echo $sess->userData && $sess->userData['user_type'] != 1? 'disabled':'';?>>
                 </div>
                 <div class="col-md-6">
                     <?php if ($sess->loginId && ($sess->userData && $sess->userData['user_type'] == 1)) { ?>

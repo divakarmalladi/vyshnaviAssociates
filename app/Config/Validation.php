@@ -41,6 +41,22 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
+    public $createSms = [
+        'sms'          => [
+            'rules'  => 'required',
+            'errors' => [
+                'required' => 'Sms is required',
+            ],
+        ],
+        'client_phone'      => [
+            'rules'    => 'required|numeric',
+            'errors'   => [
+                'required' => 'Phone Number is required',
+                // 'max_length' => 'Phone Number should be 10 character long',
+                'numeric' => 'Phone Number accepts only numeric character'
+            ]
+        ],
+    ];
     public $createUser = [
         'user_name'          => [
             'rules'  => 'required',

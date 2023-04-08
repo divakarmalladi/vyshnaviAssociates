@@ -28,7 +28,7 @@
                     </div>
                 </div>
             </div>
-            <?php if ($sess->userData['user_type'] == 2) { ?>
+            <?php if (isset($sess->userData['user_type']) && $sess->userData['user_type'] == 2) { ?>
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-tile-blue text-white mb-4">
                     <div class="card-body">Client Registration</div>
@@ -40,13 +40,25 @@
                 </div>
             </div>
             <?php } ?>
-            <?php if ($sess->userData['user_type'] == 1) { ?>
+            <?php if (isset($sess->userData['user_type']) && $sess->userData['user_type'] == 1) { ?>
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-tile-success text-white mb-4">
                     <div class="card-body">Users</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
                         <i class="bx bx-user f-70"></i>
                         <a class="small text-white stretched-link" href="<?php echo base_url();?>/users">View Details</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+            <?php if (isset($sess->userData['user_type']) && $sess->userData['user_type'] != 3) { ?>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-tile-success text-white mb-4" style="background-color: #00342e;">
+                    <div class="card-body">Send SMS</div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <i class="bx bx-user f-70"></i>
+                        <a class="small text-white stretched-link" href="<?php echo base_url();?>/sms-details">View Details</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>

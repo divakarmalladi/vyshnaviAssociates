@@ -26,6 +26,7 @@ class Dashboard extends BaseController
         $this->validation = \Config\Services::validation();
         $this->db = \Config\Database::connect();
         $this->session = \Config\Services::session();
+        // echo '<pre>';print_r($this->session);exit;
         if (!$this->session->loginId) {
             echo 'Permission Denied';
             //return $this->response->redirect(site_url('/'));
@@ -59,13 +60,13 @@ class Dashboard extends BaseController
     public function clientList()
     {
         $data = [];
-        $builder = $this->db->table('va_clients');
+        $builder = $this->db->table('va_clients a');
         if ($this->session->userData['user_type'] == '3') {
-            $data['clients'] = $builder->where('alloted_id', $this->session->userData['login_id'])->orderBy('client_id', 'ASC')->get()->getResultarray();
+            $data['clients'] = $builder->where('a.alloted_id', $this->session->userData['login_id'])->orderBy('a.client_id', 'ASC')->get()->getResultarray();
         } else {
-            $data['clients'] = $builder->orderBy('client_id', 'ASC')->get()->getResultarray();
+            $data['clients'] = $builder->select('a.*, b.user_name, c.user_name as luser_name')->join('va_users b', 'b.login_id=a.alloted_id', 'LEFT' )->join('va_users c', 'c.login_id=a.login_id', 'LEFT' )->orderBy('a.client_id', 'ASC')->get()->getResultarray();
         }
-        
+        // echo '<pre>'; print_r($data); echo '</pre>';
         $userBuilder = $this->db->table('va_users'); 
         $data['users'] = $userBuilder->where(['user_type' => '3', 'user_status' => '1'])->orderBy('user_id', 'DESC')->get()->getResultarray();
 
@@ -193,22 +194,32 @@ class Dashboard extends BaseController
     {
         if ($this->request->is('post')) {
             // echo '<pre>'; print_r($_POST); print_r($_FILES); echo '</pre>';
-            $file_name = str_replace('formFileSm', '', $_POST['file_name']);
+            $dataExplode = explode('-',str_replace('formFileSm', '', $_POST['file_name']));
+            $file_name = $dataExplode[0]; 
+            $fileIndexKey = isset($dataExplode[1]) ?$dataExplode[1]:'';
             $checklist = preg_replace('/[0-9]/','',$file_name);
             $subChecklist = filter_var($file_name, FILTER_SANITIZE_NUMBER_INT);
             $subChecklistName = strtolower(str_replace(' ', '_',preg_replace('/[^a-zA-Z ]/','',CHECK_LIST_SUB_ITEMS[$checklist][$subChecklist]))); 
             $customerId = $_POST['customer_id'];
+            $docIdUpdate = $_POST['doc_id_update'];
             // echo $subChecklistName; exit;
-            if (strtolower($subChecklistName) == 'others') {
+            // echo $checklist;
+            // echo '<br>';
+            // echo $subChecklist;
+            // echo '<pre>';print_r($_FILES); echo '</pre>';exit;
+            if ($fileIndexKey == '') {
+                $builder = $this->db->table('va_client_documents'); 
+                $docsetData = $builder->where(['customer_id' => $this->db->escapeString($customerId), 'checklist' => $checklist, 'subchecklist' => $subChecklist])->get()->getResultarray();
+                $fileCount = !empty($docsetData)?count($docsetData):0;
                 foreach($_FILES['verifyDocs']['name'][$checklist][$subChecklist] as $fileKey => $fileVal){
 
                 
                 $uploadedFileName = $fileVal;
                 $file_extension = pathinfo($uploadedFileName, PATHINFO_EXTENSION);
-                $fileNametoBeSave = $subChecklistName.'_'.$fileKey.'.'.$file_extension;
+                $fileNametoBeSave = $subChecklistName.'_'.$fileCount.'.'.$file_extension;
                 $mainFolderPath = '\\\\DESKTOP-MGHQQLT\fileUploads/'.$customerId;
                 $folderPath = '\\\\DESKTOP-MGHQQLT\fileUploads/'.$customerId.'/'.$checklist;
-                
+                $fileCount = $fileCount + 1;
                 if (!is_dir($mainFolderPath)) {
                     mkdir($mainFolderPath, 0777, TRUE);
                 }
@@ -218,7 +229,7 @@ class Dashboard extends BaseController
                 
                 $uploadData = ['customer_id' => $customerId, 'user_id' => $this->session->loginId, 'file_name'=> $fileNametoBeSave, 'file_path' => $folderPath, 'actual_file_name' => $uploadedFileName, 'checklist' => $checklist, 'subchecklist' => $subChecklist, 'status' => '1', 'file_status' => '1'];
 
-                $builder = $this->db->table('va_client_documents'); 
+                
                 $message = '';
                 
                 $uploadStatus = move_uploaded_file($_FILES['verifyDocs']['tmp_name'][$checklist][$subChecklist][$fileKey], $folderPath.'/'.$fileNametoBeSave);
@@ -231,10 +242,10 @@ class Dashboard extends BaseController
                 }
                 }
             } else {
-                $uploadedFileName = $_FILES['verifyDocs']['name'][$checklist][$subChecklist];
+                $uploadedFileName = $_FILES['verifyDoc']['name'][$checklist][$subChecklist][$fileIndexKey];
                 $file_extension = pathinfo($uploadedFileName, PATHINFO_EXTENSION);
                 // $fileNametoBeSave = $checklist.'_'.$subChecklist.'_'.$customerId.'.'.$file_extension;
-                $fileNametoBeSave = $subChecklistName.'.'.$file_extension;
+                $fileNametoBeSave = $subChecklistName.'_'.$fileIndexKey.'.'.$file_extension;
                 // $mainFolderPath = './documents/'.$customerId;
                 // $folderPath = './documents/'.$customerId.'/'.$checklist;
                 $mainFolderPath = '\\\\DESKTOP-MGHQQLT\fileUploads/'.$customerId;
@@ -251,12 +262,12 @@ class Dashboard extends BaseController
 
                 $builder = $this->db->table('va_client_documents'); 
                 $message = '';
-                $docData = $builder->where(['customer_id' => $this->db->escapeString($customerId), 'checklist' => $checklist, 'subchecklist' => $subChecklist])->get(0,1)->getRow();
+                $docData = $builder->where(['customer_id' => $this->db->escapeString($customerId), 'doc_id' => $docIdUpdate])->get(0,1)->getRow();
                 if (!empty($docData)) {
                     if (file_exists($docData->file_path.'/'.$docData->file_name)) {
                         unlink($docData->file_path.'/'.$docData->file_name);
                     }
-                    $uploadStatus = move_uploaded_file($_FILES['verifyDocs']['tmp_name'][$checklist][$subChecklist], $folderPath.'/'.$fileNametoBeSave);
+                    $uploadStatus = move_uploaded_file($_FILES['verifyDoc']['tmp_name'][$checklist][$subChecklist][$fileIndexKey], $folderPath.'/'.$fileNametoBeSave);
                     if ($uploadStatus) {
                         $message = 'File Updated Successfully';
                     } else {
@@ -269,15 +280,6 @@ class Dashboard extends BaseController
                     unset($uploadData['checklist']); unset($uploadData['subchecklist']);
                     $builder->where('doc_id', $docId);
                     $builder->update($uploadData);
-                } else {
-                    $uploadStatus = move_uploaded_file($_FILES['verifyDocs']['tmp_name'][$checklist][$subChecklist], $folderPath.'/'.$fileNametoBeSave);
-                    if ($uploadStatus) {
-                        $builder->insert($uploadData);
-                        $docId = $this->db->insertID();
-                        $message = 'File Uploaded Successfully';
-                    } else {
-                        $message = 'Something went wrong, Please try again';
-                    }
                 }
             }
             
@@ -364,7 +366,8 @@ class Dashboard extends BaseController
             $userRegData = $this->request->getJSON();
             $userData = json_decode(json_encode($userRegData), true);
             $customer_id = $userData['customerId'];
-            $text = $userData['notesText'];
+            $previousText = $userData['paraText'];
+            $text = $previousText.$userData['notesText'].'###';
             $fileStatus = $userData['fileStatus'];
             $loginId = $this->session->loginId;
             $data = ['file_status_code' => $fileStatus, 'file_text' => $text, 'login_id' => $loginId];
@@ -582,5 +585,86 @@ class Dashboard extends BaseController
             }
         }
     }
-    
+    public function smsList()
+    {
+        if ($this->session->userData['user_type'] == '3') {
+            echo 'Restricted Access';
+            return false;
+        }
+        $data = [];
+        $builder = $this->db->table('va_sms a'); 
+        $data['sms'] = $builder->select('a.*, b.user_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->orderBy('sms_id', 'DESC')->get()->getResultarray();
+        return view('common/header', $data)
+            . view('pages/sms')
+            . view('common/footer');
+    }
+    public function sendSms()
+    {
+        if ($this->request->is('post')) {
+            $userRegData = $this->request->getJSON();
+            $userData = json_decode(json_encode($userRegData), true);
+            
+            $client_id = $userData['client_id'];
+            $client_name = $userData['client_name'];
+            $client_phone = $userData['client_phone'];
+            $sms = $userData['sms'];
+            $login_id = $userData['login_id'];
+
+            $data = ['client_id' => $client_id, 'client_name' => $client_name, 'client_phone' => $client_phone, 'sms' => $sms, 'login_id' => $login_id, 'status' => '1' ];
+
+            $this->validation->setRuleGroup('createSms');
+            // $this->validation->setRule('user_email', 'Email', 'required|min_length[3]');
+            if (!$this->validation->run($data)) {
+                $errors['errors'] = $this->validation->getErrors();
+                $errors['status'] = 201;
+                return json_encode($errors);
+                exit;
+            } else {
+                $builder = $this->db->table('va_sms'); 
+                $builder->insert($data);
+                $insertId = $this->db->insertID();
+                $redirectUrl = base_url().'/sms-details';
+                $smsResult = $this->sendTextMessage($data['client_phone'], $data['sms']);
+                return json_encode(['message' => 'SMS Sent Successfully','status' => 200, 'page' => 'sms-details', 'smsId' => $insertId, 'redirectUrl' => $redirectUrl, 'smsResult' => $smsResult]);
+                exit;
+            }
+        } else {
+            $data = [];
+            if ($this->session->userData['user_type'] == '3') {
+                echo 'Restricted Access';
+                return false;
+            }
+            $builder = $this->db->table('va_clients');
+            $data['clients'] = $builder->orderBy('client_id', 'ASC')->get()->getResultarray();
+            // print_r($data['clients']);exit;
+            return view('common/header', $data)
+                . view('pages/send-sms', $data)
+                . view('common/footer', $data);
+        }
+    } 
+    public function sendTextMessage($phoneNumber, $sms) {
+        // Authorisation details.
+        $username = "divakarmalladi@gmail.com";
+        $hash = "12e61ce0cea935fe1c12b737c32f3886b22aae5c4263bbcb49cea8674da29623";
+
+        // Config variables. Consult http://api.textlocal.in/docs for more info.
+        $test = "0";
+
+        // Data for text message. This is the text message data.
+        $sender = "VYASEA"; // This is who the message appears to be from.
+        $numbers = $phoneNumber; // A single number or a comma-seperated list of numbers
+        $message = $sms;
+        // 612 chars or less
+        // A single number or a comma-seperated list of numbers
+        $message = urlencode($message);
+        $data = "username=".$username."&hash=".$hash."&message=".$message."&sender=".$sender."&numbers=".$numbers."&test=".$test;
+        $ch = curl_init('https://api.textlocal.in/send/?');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        $result = curl_exec($ch); // This is the result from the API
+        curl_close($ch);
+        return $result;
+    }   
 }
