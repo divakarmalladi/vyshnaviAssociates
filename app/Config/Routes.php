@@ -46,10 +46,12 @@ $routes->get('/edit-profile/(:any)', 'Dashboard::createUser');
 $routes->get('/delete-user/(:any)', 'Dashboard::deleteUser');
 $routes->get('/users', 'Dashboard::userList');
 $routes->get('/sms-details', 'Dashboard::smsList');
+$routes->get('/sms-details/(:any)', 'Dashboard::smsList');
 $routes->post('/send-sms', 'Dashboard::sendSms');
 $routes->get('/send-sms', 'Dashboard::sendSms');
 
 $routes->get('/clients', 'Dashboard::clientList');
+$routes->get('/clients/(:any)', 'Dashboard::clientList');
 // $routes->get('/client-registration', 'Dashboard::clientRegistration');
 $routes->get('/client-registration', 'Dashboard::clientRegistration');
 $routes->post('/client-registration', 'Dashboard::clientRegistration');

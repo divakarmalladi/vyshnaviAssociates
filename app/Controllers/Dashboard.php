@@ -61,17 +61,29 @@ class Dashboard extends BaseController
     {
         $data = [];
         $builder = $this->db->table('va_clients a');
+        $uri = service('uri'); 
+        $data['pageNum'] =  $uri->getSegment(2) ? $uri->getSegment(2) : 1;
+        $data['limit'] = 20;
+        $pageOffset = ($data['pageNum']? ($data['pageNum'] - 1 ):0) * $data['limit'];
+        $offset = $pageOffset;
+        
+
         if ($this->session->userData['user_type'] == '3') {
-            $data['clients'] = $builder->where('a.alloted_id', $this->session->userData['login_id'])->orderBy('a.client_id', 'ASC')->get()->getResultarray();
+            $data['clients'] = $builder->where('a.alloted_id', $this->session->userData['login_id'])->orderBy('a.client_id', 'ASC')->get($data['limit'], $pageOffset)->getResultarray();
         } else {
-            $data['clients'] = $builder->select('a.*, b.user_name, c.user_name as luser_name')->join('va_users b', 'b.login_id=a.alloted_id', 'LEFT' )->join('va_users c', 'c.login_id=a.login_id', 'LEFT' )->orderBy('a.client_id', 'ASC')->get()->getResultarray();
+            $data['clients'] = $builder->select('a.*, b.user_name, c.user_name as luser_name')->join('va_users b', 'b.login_id=a.alloted_id', 'LEFT' )->join('va_users c', 'c.login_id=a.registered_id', 'LEFT' )->orderBy('a.client_id', 'ASC')->get($data['limit'], $pageOffset)->getResultarray();
         }
         // echo '<pre>'; print_r($data); echo '</pre>';
         $userBuilder = $this->db->table('va_users'); 
         $data['users'] = $userBuilder->where(['user_type' => '3', 'user_status' => '1'])->orderBy('user_id', 'DESC')->get()->getResultarray();
+        
+        $data['clientsCount'] = $builder->countAllResults();
+        $data['totalPages'] = ceil($data['clientsCount'] / $data['limit']);
+        $data['firstPage'] = 1;
+        $data['lastPage'] = $data['totalPages'];
 
         return view('common/header', $data)
-            . view('pages/clients')
+            . view('pages/clients', $data)
             . view('common/footer');
     }
     public function clientRegistration()
@@ -124,6 +136,7 @@ class Dashboard extends BaseController
             } else {
                 $builder = $this->db->table('va_clients'); 
                 if ($pageAction === 'add') {
+                    $data['registered_id'] = $data['login_id'];
                     $builder->insert($data);
                     $insertId = $this->db->insertID();
                     $redirectUrl = base_url().'/clients';
@@ -175,7 +188,7 @@ class Dashboard extends BaseController
                 // echo '<pre>'; print_r($data); echo '</pre>';
 
                 $notebuilder = $this->db->table('va_clients_notes'); 
-                $noteData = $notebuilder->where('status', '1')->get()->getResultArray();
+                $noteData = $notebuilder->where('customer_id', $this->db->escapeString($data['customerId']))->get()->getResultArray();
                 if (!empty($noteData)) {
                     $noteInfo = [];
                     foreach($noteData as $key => $val) {
@@ -592,8 +605,17 @@ class Dashboard extends BaseController
             return false;
         }
         $data = [];
+        $uri = service('uri'); 
+        $data['pageNum'] =  $uri->getSegment(2) ? $uri->getSegment(2) : 1;
+        $data['limit'] = 20;
+        $pageOffset = ($data['pageNum']? ($data['pageNum'] - 1 ):0) * $data['limit'];
+        $offset = $pageOffset;
         $builder = $this->db->table('va_sms a'); 
-        $data['sms'] = $builder->select('a.*, b.user_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->orderBy('sms_id', 'DESC')->get()->getResultarray();
+        $data['smsCount'] = $builder->countAllResults();
+        $data['totalPages'] = ceil($data['smsCount'] / $data['limit']);
+        $data['firstPage'] = 1;
+        $data['lastPage'] = $data['totalPages'];
+        $data['sms'] = $builder->select('a.*, b.user_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->orderBy('sms_id', 'DESC')->get($data['limit'], $pageOffset)->getResultarray();
         return view('common/header', $data)
             . view('pages/sms')
             . view('common/footer');

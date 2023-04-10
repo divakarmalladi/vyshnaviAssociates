@@ -8,6 +8,7 @@
           <h2>Client Registration</h2>
           <ol>
             <li><a href="<?php echo base_url();?>/user-dashboard">Dashboard</a></li>
+            <li><a href="<?php echo base_url();?>/clients">Clients</a></li>
             <li>Client Registration</li>
           </ol>
         </div>

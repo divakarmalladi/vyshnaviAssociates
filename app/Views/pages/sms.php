@@ -38,7 +38,7 @@
                                 foreach($sms as $key => $value) {
                             ?>
                             <tr>
-                                <th scope="row"><?php echo $key + 1;?></th>
+                                <th scope="row"><?php echo (($pageNum - 1) * $limit) + ($key + 1) ;?></th>
                                 <td><?php echo $value['client_name'];?></td>
                                 <td><?php echo $value['client_phone'];?></td>
                                 <td><?php echo $value['sms'];?></td>
@@ -52,7 +52,34 @@
                             <?php } ?>
                         </tbody>
                     </table>
-                    
+                    <?php if (isset($totalPages) && $totalPages > 1) { ?>
+                    <nav aria-label="Page navigation example">
+                      <ul class="pagination justify-content-end">
+                        <li class="page-item <?php echo $pageNum==$firstPage? 'disabled':''?>">
+                          <a class="page-link" href="<?php echo base_url('sms-details/'.$firstPage);?>" tabindex="-1">First</a>
+                        </li>
+                        <li class="page-item <?php echo $pageNum==$firstPage? 'disabled':''?>">
+                          <a class="page-link" href="<?php echo base_url('sms-details/'.($pageNum-1));?>" tabindex="-1"><</a>
+                        </li>
+                        <?php if($totalPages < 20 ) { for($i = 1; $i<= $totalPages; $i++) {?>
+                        <li class="page-item"><a class="page-link <?php echo $pageNum == $i? 'active':''?>" href="<?php echo base_url('sms-details/'.$i);?>"><?php echo $i;?></a></li>
+                        <?php } } else { for($i=$pageNum - 5; $i<$pageNum; $i++) { if ($i > $firstPage) { ?>
+                          <li class="page-item"><a class="page-link <?php echo $pageNum == $i? 'active':''?>" href="<?php echo base_url('sms-details/'.$i);?>"><?php echo $i;?></a></li>
+                        <?php } } ?>
+                        <?php for($j=$pageNum; $j<= ($pageNum+5); $j++) { if($j < $totalPages) { ?>
+                          <li class="page-item"><a class="page-link <?php echo $pageNum == $j? 'active':''?>" href="<?php echo base_url('sms-details/'.$j);?>"><?php echo $j;?></a></li>
+                        <?php }} ?>
+                        <?php } ?>
+                        <li class="page-item <?php echo $pageNum == $lastPage ? 'disabled':''; ?>">
+                          <a class="page-link" href="<?php echo base_url('sms-details/'.($pageNum + 1));?>">></a>
+                        </li>
+                        <li class="page-item <?php echo $pageNum == $lastPage ? 'disabled':''; ?>">
+                          <a class="page-link" href="<?php echo base_url('sms-details/'.$lastPage);?>">Last</a>
+                        </li>
+                        
+                      </ul>
+                    </nav>
+                    <?php } ?>
                 </div>
             </div>
         </div>
