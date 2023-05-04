@@ -140,6 +140,12 @@ class Dashboard extends BaseController
                     $builder->insert($data);
                     $insertId = $this->db->insertID();
                     $redirectUrl = base_url().'/clients';
+                    
+                    $smsData = ['sms' => 'Welcome to vyshnavi associates, thank you for contacting us your registration number is '.$customerId.' - M & V CONSULTANTS', 'client_phone' => $contactNumber, 'client_id' => $customerId, 'client_name' => $customerName,'login_id' => $loginId, 'status' => '1'];
+
+                    $smsbuilder = $this->db->table('va_sms'); 
+                    $smsbuilder->insert($smsData);
+                    $smsResult = $this->sendTextMessage($smsData['client_phone'], $smsData['sms']);
                 } else {
                     $insertId = $this->db->escapeString($data['customer_id']);
                     unset($data['customer_id']);
@@ -667,7 +673,7 @@ class Dashboard extends BaseController
     public function sendTextMessage($phoneNumber, $sms) {
         // Authorisation details.
         $username = "divakarmalladi@gmail.com";
-        $hash = "12e61ce0cea935fe1c12b737c32f3886b22aae5c4263bbcb49cea8674da29623";
+        $hash = "106473c94e0bc825fb5e087470acde3d9dccd7fd9d5c141e8b8ef3228f2c57ae";
 
         // Config variables. Consult http://api.textlocal.in/docs for more info.
         $test = "0";
