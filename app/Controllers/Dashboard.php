@@ -40,6 +40,9 @@ class Dashboard extends BaseController
     public function home()
     {
         $data = [];
+        $builder = $this->db->table('va_track_employees a'); 
+        $data['notiCountNews'] = $builder->where('view_status','0')->countAllResults();
+        $data['notificationss'] = $builder->select('a.*, b.user_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->where('view_status','0')->orderBy('track_id', 'DESC')->get(10, 0)->getResultarray();
         return view('common/header', $data)
             . view('pages/dashboard')
             . view('common/footer');
@@ -256,6 +259,17 @@ class Dashboard extends BaseController
                     $builder->insert($uploadData);
                     $docId = $this->db->insertID();
                     $message = 'File Uploaded Successfully';
+
+                    if ($this->session->userData['user_type'] == '3') {
+                        /**Tracking the file status */
+                        $activityTitle = 'Uploaded the file : '.$uploadedFileName;
+                        $activityDescription = 'Uploaded the file : '.$uploadedFileName.' in '.CHECK_LIST[$checklist].' :: '.CHECK_LIST_SUB_ITEMS[$checklist][$subChecklist].' for client :: '.$customerId;
+                        $trackbuilder = $this->db->table('va_track_employees'); 
+                        $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customerId, 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'Edit Client: Uploading File', 'page_id' => '2'];
+                        $trackbuilder->insert($trackData);
+                        /**Tracking the file status end */
+                    }
+
                 } else {
                     $message = 'Something went wrong, Please try again';
                 }
@@ -299,6 +313,17 @@ class Dashboard extends BaseController
                     unset($uploadData['checklist']); unset($uploadData['subchecklist']);
                     $builder->where('doc_id', $docId);
                     $builder->update($uploadData);
+
+                    if ($this->session->userData['user_type'] == '3') {
+                        /**Tracking the file status */
+                        $activityTitle = 'Updated the file : '.$uploadedFileName;
+                        $activityDescription = 'Updated the file : '.$uploadedFileName.' in '.CHECK_LIST[$checklist].' :: '.CHECK_LIST_SUB_ITEMS[$checklist][$subChecklist].' for client :: '.$customerId;
+                        $trackbuilder = $this->db->table('va_track_employees'); 
+                        $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customerId, 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'Edit Client: Uploading File', 'page_id' => '2'];
+                        $trackbuilder->insert($trackData);
+                        /**Tracking the file status end */
+                    }
+
                 }
             }
             
@@ -354,6 +379,15 @@ class Dashboard extends BaseController
                     $data = ['notes' => $notes, 'checklist' => $checklist, 'customer_id' => $customer_id, 'user_id' => $loginId, 'status' => '1' ];
                     $builder->insert($data);
                     $insertId = $this->db->insertID();
+                    if ($this->session->userData['user_type'] == '3') {
+                        /**Tracking the file status */
+                        $activityTitle = 'Updated the '.$checklist.' notes';
+                        $activityDescription = 'Updated the notes: '.$notes;
+                        $trackbuilder = $this->db->table('va_track_employees'); 
+                        $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customer_id, 'login_id' => $loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'Edit Client: Notes', 'page_id' => '2'];
+                        $trackbuilder->insert($trackData);
+                        /**Tracking the file status end */
+                    }
                 }
                 return json_encode(['message' => 'Notes Saved Successfully','status' => 200, 'notesId' => $insertId, 'userId' => $loginId]);
                 exit;
@@ -400,6 +434,16 @@ class Dashboard extends BaseController
                 $customer_id = $this->db->escapeString($customer_id);
                 $builder->where('customer_id', $customer_id);
                 $builder->update($data);
+
+                if ($this->session->userData['user_type'] == '3') {
+                    /**Tracking the file status */
+                    $activityTitle = 'Updated the file status: '.$fileStatus;
+                    $activityDescription = 'Updated the file status notes: '.$userData['notesText'];
+                    $trackbuilder = $this->db->table('va_track_employees'); 
+                    $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customer_id, 'login_id' => $loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'clients: file status', 'page_id' => '1'];
+                    $trackbuilder->insert($trackData);
+                    /**Tracking the file status end */
+                }
                 return json_encode(['message' => 'File status updated successfully','status' => 200]);
                 exit;
             }
@@ -694,5 +738,48 @@ class Dashboard extends BaseController
         $result = curl_exec($ch); // This is the result from the API
         curl_close($ch);
         return $result;
+    }
+    public function notifications()
+    {
+        if ($this->session->userData['user_type'] == '3') {
+            echo 'Restricted Access';
+            return false;
+        }
+        $data = [];
+        $uri = service('uri'); 
+        $data['pageNum'] =  $uri->getSegment(2) ? $uri->getSegment(2) : 1;
+        $data['limit'] = 20;
+        $pageOffset = ($data['pageNum']? ($data['pageNum'] - 1 ):0) * $data['limit'];
+        $offset = $pageOffset;
+        $builder = $this->db->table('va_track_employees a'); 
+        $data['notiCount'] = $builder->countAllResults();
+        $data['notiCountNew'] = $builder->where('view_status','0')->countAllResults();
+        $data['totalPages'] = ceil($data['notiCount'] / $data['limit']);
+        $data['firstPage'] = 1;
+        $data['lastPage'] = $data['totalPages'];
+        $data['notifications'] = $builder->select('a.*, b.user_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->orderBy('track_id', 'DESC')->get($data['limit'], $pageOffset)->getResultarray();
+        // echo '<pre>'; print_r($data); echo '</pre>';
+        return view('common/header', $data)
+            . view('pages/notifications')
+            . view('common/footer');
+    }
+    public function viewNotification()
+    {
+        if ($this->session->userData['user_type'] == '3') {
+            echo 'Restricted Access';
+            return false;
+        }
+        $data = [];
+        $uri = service('uri'); 
+        $notiId =  $uri->getSegment(2);
+        $builder = $this->db->table('va_track_employees a'); 
+        $data['notification'] = $builder->select('a.*, b.user_name, c.customer_name')->join('va_users b', 'b.login_id=a.login_id', 'LEFT')->join('va_clients c', 'c.customer_id=a.client_id', 'LEFT')->where('a.track_id', $notiId)->get(1, 0)->getResultarray();
+        // aecho '<pre>'; print_r($data); echo '</pre>';
+        $builder->where('track_id', $notiId);
+        $builder->update(['view_status'=> "1"]);
+
+        return view('common/header', $data)
+            . view('pages/view-notification', $data)
+            . view('common/footer');
     }   
 }

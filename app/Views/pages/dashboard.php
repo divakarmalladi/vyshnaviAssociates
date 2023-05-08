@@ -57,8 +57,20 @@
                 <div class="card bg-tile-success text-white mb-4" style="background-color: #00342e;">
                     <div class="card-body">Send SMS</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
-                        <i class="bx bx-user f-70"></i>
+                        <i class="bx bx-message f-70"></i>
                         <a class="small text-white stretched-link" href="<?php echo base_url();?>/sms-details">View Details</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+            <?php if (isset($sess->userData['user_type']) && $sess->userData['user_type'] != 3) { ?>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-tile-success text-white mb-4" style="background-color: #15766b;">
+                    <div class="card-body">Notifications</div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <i class="bx bx-bell f-70"></i>
+                        <a class="small text-white stretched-link" href="<?php echo base_url();?>/notifications">View Details</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>

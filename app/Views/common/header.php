@@ -48,6 +48,22 @@
         <nav id="navbar" class="navbar">
           <ul>
             <?php if ($session->loginId) {?>
+              <?php if (isset($notificationss) && $session->userData['user_type']!=3) { ?>
+              <li>
+                <div class="dropdown">
+                  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false" style="color:#fff;padding: 8px 20px;border-radius: 0px;background: #009970;border: 1px solid #009970;">
+                    Notifications (<?php echo isset($notiCountNews) ? $notiCountNews :0;?>)
+                  </a>
+                  <?php if (!empty($notificationss)) { ?>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <?php foreach($notificationss as $nkey => $nval) { ?>
+                    <li><a class="dropdown-item" href="<?php echo base_url('view-notification/'.$nval['track_id']);?>"><?php echo $nval['activity_title']?></a></li>
+                    <?php } ?>
+                  </ul>
+                  <?php } ?>
+                </div>
+              </li>
+              <?php } ?>
               <li><a href="<?php echo base_url();?>/user-dashboard" class="nav-link scrollto" style="color: #10c796;font-size:18px;"><?php echo USER_TYPE_LIST[$session->userData['user_type']];?> Portal (<?php echo $session->userData['user_name'];?>)</a></li>
               
               <li><a class="nav-link scrollto" href="<?php echo base_url();?>/logout">Logout</a></li>

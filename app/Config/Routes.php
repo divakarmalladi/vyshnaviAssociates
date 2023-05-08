@@ -64,6 +64,10 @@ $routes->post('/delete-notes', 'Dashboard::deleteNotes');
 $routes->post('/allot-client', 'Dashboard::allotClientToEmployee');
 $routes->get('/delete-client/(:any)', 'Dashboard::deleteClient');
 $routes->post('/delete-file', 'Dashboard::deleteFile');
+
+$routes->get('/notifications', 'Dashboard::notifications');
+$routes->get('/notifications/(:any)', 'Dashboard::notifications');
+$routes->get('/view-notification/(:any)', 'Dashboard::viewNotification');
 use App\Controllers\Pages;
 
 // $routes->get('pages', [Pages::class, 'index']);
