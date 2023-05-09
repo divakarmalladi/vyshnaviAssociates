@@ -142,6 +142,15 @@ class Dashboard extends BaseController
                     $data['registered_id'] = $data['login_id'];
                     $builder->insert($data);
                     $insertId = $this->db->insertID();
+                    if ($this->session->userData['user_type'] != '1') {
+                        /**Tracking the file status */
+                        $activityTitle = 'Registered the Client: '.$customerId;
+                        $activityDescription = 'Registered the Client : '.$customerId;
+                        $trackbuilder = $this->db->table('va_track_employees'); 
+                        $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customerId, 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'client Registration', 'page_id' => '2'];
+                        $trackbuilder->insert($trackData);
+                        /**Tracking the file status end */
+                    }
                     $redirectUrl = base_url().'/clients';
                     
                     $smsData = ['sms' => 'Welcome to vyshnavi associates, thank you for contacting us your registration number is '.$customerId.' - M & V CONSULTANTS', 'client_phone' => $contactNumber, 'client_id' => $customerId, 'client_name' => $customerName,'login_id' => $loginId, 'status' => '1'];
@@ -154,6 +163,15 @@ class Dashboard extends BaseController
                     unset($data['customer_id']);
                     $builder->where('customer_id', $insertId);
                     $builder->update($data);
+                    if ($this->session->userData['user_type'] != '1') {
+                        /**Tracking the file status */
+                        $activityTitle = 'Updated the Client Info: '.$customerId;
+                        $activityDescription = 'Updated the Client Info: '.$customerId;
+                        $trackbuilder = $this->db->table('va_track_employees'); 
+                        $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customerId, 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'Edit Client', 'page_id' => '2'];
+                        $trackbuilder->insert($trackData);
+                        /**Tracking the file status end */
+                    }
                     $redirectUrl = '';
                 }
                 
@@ -260,7 +278,7 @@ class Dashboard extends BaseController
                     $docId = $this->db->insertID();
                     $message = 'File Uploaded Successfully';
 
-                    if ($this->session->userData['user_type'] == '3') {
+                    if ($this->session->userData['user_type'] != '1') {
                         /**Tracking the file status */
                         $activityTitle = 'Uploaded the file : '.$uploadedFileName;
                         $activityDescription = 'Uploaded the file : '.$uploadedFileName.' in '.CHECK_LIST[$checklist].' :: '.CHECK_LIST_SUB_ITEMS[$checklist][$subChecklist].' for client :: '.$customerId;
@@ -314,7 +332,7 @@ class Dashboard extends BaseController
                     $builder->where('doc_id', $docId);
                     $builder->update($uploadData);
 
-                    if ($this->session->userData['user_type'] == '3') {
+                    if ($this->session->userData['user_type'] != '1') {
                         /**Tracking the file status */
                         $activityTitle = 'Updated the file : '.$uploadedFileName;
                         $activityDescription = 'Updated the file : '.$uploadedFileName.' in '.CHECK_LIST[$checklist].' :: '.CHECK_LIST_SUB_ITEMS[$checklist][$subChecklist].' for client :: '.$customerId;
@@ -379,7 +397,7 @@ class Dashboard extends BaseController
                     $data = ['notes' => $notes, 'checklist' => $checklist, 'customer_id' => $customer_id, 'user_id' => $loginId, 'status' => '1' ];
                     $builder->insert($data);
                     $insertId = $this->db->insertID();
-                    if ($this->session->userData['user_type'] == '3') {
+                    if ($this->session->userData['user_type'] != '1') {
                         /**Tracking the file status */
                         $activityTitle = 'Updated the '.$checklist.' notes';
                         $activityDescription = 'Updated the notes: '.$notes;
@@ -435,7 +453,7 @@ class Dashboard extends BaseController
                 $builder->where('customer_id', $customer_id);
                 $builder->update($data);
 
-                if ($this->session->userData['user_type'] == '3') {
+                if ($this->session->userData['user_type'] != '1') {
                     /**Tracking the file status */
                     $activityTitle = 'Updated the file status: '.$fileStatus;
                     $activityDescription = 'Updated the file status notes: '.$userData['notesText'];
@@ -484,6 +502,15 @@ class Dashboard extends BaseController
             $builder->delete(['customer_id' => $this->db->escapeString($data['customer_id'])]);
             $affectedRows = $this->db->affectedRows();
             if ($affectedRows > 0) {
+                if ($this->session->userData['user_type'] != '1') {
+                    /**Tracking the file status */
+                    $activityTitle = 'Deleted the Client: '.$data['customer_id'];
+                    $activityDescription = 'Deleted the Client:: '.$data['customer_id'].'::'.$userListData->customer_name;
+                    $trackbuilder = $this->db->table('va_track_employees'); 
+                    $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $data['customer_id'], 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'Clients', 'page_id' => '3'];
+                    $trackbuilder->insert($trackData);
+                    /**Tracking the file status end */
+                }
                 $docBuilder = $this->db->table('va_client_documents');
                 $docBuilder->delete(['customer_id' => $this->db->escapeString($data['customer_id'])]);
 
@@ -523,7 +550,7 @@ class Dashboard extends BaseController
 
             $builder = $this->db->table('va_client_documents'); 
             $fileData = $builder->where('doc_id', $this->db->escapeString($fileId))->get(0,1)->getRow();
-            // echo '<pre>';print_r($fileData);exit;
+
             if (!empty($fileData)) {
                 $builder->delete(['doc_id' => $this->db->escapeString($fileId)]);
                 $affectedRows = $this->db->affectedRows();
@@ -531,6 +558,15 @@ class Dashboard extends BaseController
                     $filePath = $fileData->file_path.'/'.$fileData->file_name;
                     if(is_file($filePath)) {
                         unlink($filePath); // delete file
+                        if ($this->session->userData['user_type'] != '1') {
+                            /**Tracking the file status */
+                            $activityTitle = 'Deleted the file: '.$fileData->actual_file_name;
+                            $activityDescription = 'Deleted the file : '.$fileData->actual_file_name.' in '.CHECK_LIST[$fileData->checklist].' :: '.CHECK_LIST_SUB_ITEMS[$fileData->checklist][$fileData->subchecklist].' for client :: '.$customerId;
+                            $trackbuilder = $this->db->table('va_track_employees'); 
+                            $trackData = ['activity_title' => $activityTitle, 'activity_description' => $activityDescription, 'client_id' => $customerId, 'login_id' => $this->session->loginId, 'status' => '1', 'view_status' => '0', 'page_name' => 'clients: file status', 'page_id' => '1'];
+                            $trackbuilder->insert($trackData);
+                            /**Tracking the file status end */
+                        }
                         return json_encode(['message' => 'File Deleted successfully','status' => 200]);
                     }
                 }   
@@ -781,5 +817,23 @@ class Dashboard extends BaseController
         return view('common/header', $data)
             . view('pages/view-notification', $data)
             . view('common/footer');
+    }
+    public function deleteNotification()
+    {
+        if ($this->session->userData['user_type'] != '1') {
+            echo 'Restricted Access';
+            return false;
+        }
+        $uri = service('uri'); 
+        $trackId = $uri->getSegment(2);
+        $builder = $this->db->table('va_track_employees'); 
+        $userListData = $builder->where('track_id', $this->db->escapeString($trackId))->orderBy('track_id', 'DESC')->get(0,1)->getRow();
+        if (!empty($userListData)) {
+            $builder->delete(['track_id' => $this->db->escapeString($trackId)]);
+            echo $affectedRows = $this->db->affectedRows();
+            if ($affectedRows > 0) {
+                return $this->response->redirect(site_url('/notifications'));
+            }
+        }
     }   
 }

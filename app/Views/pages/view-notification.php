@@ -1,4 +1,4 @@
-
+<?php $session = session();?>
 <main id="main">
     <!-- ======= Breadcrumbs ======= -->
     <section class="breadcrumbs">
@@ -46,10 +46,18 @@
                                 <th scope="col">Client Id</th>
                                 <td scope="col"><?php echo isset($notification[0])?$notification[0]['client_id']:''?></td>
                             </tr>
+                            <?php if (isset($notification[0]) && $notification[0]['page_id'] != '3') { ?>
                             <tr>
                                 <th scope="col">View Details </th>
                                 <td scope="col"><a href="<?php $notiurl = isset($notification[0]) && $notification[0]['page_id'] == '1' ?'clients':'edit-client/'.$notification[0]['client_id']; echo base_url($notiurl);?>" class="btn btn-success btn-sm" style="border-radius:0px;">Check Changes</a></td>
                             </tr>
+                            <?php } ?>
+                            <?php if ($session->userData['user_type'] == '1') { ?>
+                            <tr>
+                                <th scope="col">Delete Notification</th>
+                                <td scope="col"><a style="border-radius:0;" href="javascript:;" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick="return setNotificationId('<?php echo isset($notification[0]) ? $notification[0]['track_id']:''?>');">Delete</a></td>
+                            </tr>
+                            <?php } ?>
                         </thead>
                         
                     </table>
@@ -67,12 +75,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
-        <input type="hidden" name="loginId" id="loginId" value="">
+        <input type="hidden" name="notiId" id="notiId" value="">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
-        <button type="button" class="btn btn-danger" onClick="return deleteUser();">Yes, Delete</button>
+        <button type="button" class="btn btn-danger" onClick="return deleteNotification();">Yes, Delete</button>
       </div>
       
     </div>
@@ -80,11 +88,11 @@
 </div>
 
 <script>
-const setLoginId = (loginId) => {
-    document.getElementById('loginId').value = loginId;
+const setNotificationId = (notiId) => {
+    document.getElementById('notiId').value = notiId;
 }
-const deleteUser = () => {
-    const loginId = document.getElementById('loginId').value;
-    window.location.href = '<?php echo base_url('delete-user')?>/'+loginId;
+const deleteNotification = () => {
+    const notiId = document.getElementById('notiId').value;
+    window.location.href = '<?php echo base_url('delete-notification')?>/'+notiId;
 }
 </script>

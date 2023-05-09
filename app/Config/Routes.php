@@ -68,6 +68,7 @@ $routes->post('/delete-file', 'Dashboard::deleteFile');
 $routes->get('/notifications', 'Dashboard::notifications');
 $routes->get('/notifications/(:any)', 'Dashboard::notifications');
 $routes->get('/view-notification/(:any)', 'Dashboard::viewNotification');
+$routes->get('/delete-notification/(:any)', 'Dashboard::deleteNotification');
 use App\Controllers\Pages;
 
 // $routes->get('pages', [Pages::class, 'index']);

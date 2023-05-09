@@ -1,4 +1,4 @@
-
+<?php $session = session();?>
 <main id="main">
     <!-- ======= Breadcrumbs ======= -->
     <section class="breadcrumbs">
@@ -35,10 +35,15 @@
                             ?>
                             <tr>
                                 <th scope="row"><?php echo (($pageNum - 1) * $limit) + ($key + 1) ;?></th>
-                                <td><?php echo $value['activity_description'];?></td>
+                                <td width="55%"><?php echo $value['activity_description'];?></td>
                                 <td><?php echo $value['user_name'];?></td>
                                 <td><?php echo date('d-m-Y, h:i a', strtotime($value['created_date']));?></td>
-                                <td><a style="border-radius:0;" href="<?php echo base_url('view-notification/'.$value['track_id']);?>" class="btn btn-success btn-sm">View</a></td>
+                                <td>
+                                  <a style="border-radius:0;" href="<?php echo base_url('view-notification/'.$value['track_id']);?>" class="btn <?php echo $value['view_status'] == 0?' btn-warning':' btn-success'?>  btn-sm">View</a>
+                                  <?php if ($session->userData['user_type'] == '1') { ?>
+                                  <a style="border-radius:0;margin-left:5px;" href="javascript:;" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick="return setNotificationId('<?php echo $value['track_id']?>');">Delete</a>
+                                  <?php } ?>
+                                </td>
                             </tr>
                             <?php } } else {  ?>
                             <tr>
@@ -88,12 +93,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
-        <input type="hidden" name="loginId" id="loginId" value="">
+        <input type="hidden" name="notiId" id="notiId" value="">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
-        <button type="button" class="btn btn-danger" onClick="return deleteUser();">Yes, Delete</button>
+        <button type="button" class="btn btn-danger" onClick="return deleteNotification();">Yes, Delete</button>
       </div>
       
     </div>
@@ -101,11 +106,11 @@
 </div>
 
 <script>
-const setLoginId = (loginId) => {
-    document.getElementById('loginId').value = loginId;
+const setNotificationId = (notiId) => {
+    document.getElementById('notiId').value = notiId;
 }
-const deleteUser = () => {
-    const loginId = document.getElementById('loginId').value;
-    window.location.href = '<?php echo base_url('delete-user')?>/'+loginId;
+const deleteNotification = () => {
+    const notiId = document.getElementById('notiId').value;
+    window.location.href = '<?php echo base_url('delete-notification')?>/'+notiId;
 }
 </script>
